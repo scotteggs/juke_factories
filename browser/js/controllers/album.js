@@ -20,9 +20,31 @@
 // 	imageUrl: 'http://fillmurray.com/300/300'
 // };
 
-app.controller('AlbumCtrl', function ($scope, $http, $rootScope) {
+app.factory('StatsFactory', function ($q) {
+    var statsObj = {};
+    statsObj.totalTime = function (album) {
+        var audio = document.createElement('audio');
+        return $q(function (resolve, reject) {
+            var sum = 0;
+            var n = 0;
+            function resolveOrRecur () {
+                if (n >= album.songs.length) resolve(sum);
+                else audio.src = album.songs[n++].audioUrl;
+            }
+            audio.addEventListener('loadedmetadata', function () {
+                sum += audio.duration;
+                resolveOrRecur();
+            });
+            resolveOrRecur();
+        });
+    };
+    return statsObj;
+});
+
+
+app.controller('AlbumCtrl', function ($scope, $http, $rootScope, StatsFactory) {
 	// $scope.album = fakeAlbum;
-	$http.get('/api/albums/561e86b67cc60c7cebd21a57')
+	$http.get('/api/albums/561eb127aa4d88af14119c23')
 	.then(function (response) {
 		var album = response.data;
 		album.imageUrl = '/api/albums/' + album._id + '.image';
@@ -34,6 +56,13 @@ app.controller('AlbumCtrl', function ($scope, $http, $rootScope) {
 			});
 		});
 		$scope.album = album;
+
+		StatsFactory.totalTime(album)
+    .then(function (albumDuration) {
+        $scope.fullDuration = albumDuration;
+        console.log(albumDuration);
+    });
+
 	});
 	$scope.start = function (s) {
 		$rootScope.$broadcast('startIt', {
