@@ -8,6 +8,7 @@
 	<script src="/lodash/index.js"></script>
 	<script src="/angular/angular.js"></script>
 	<script src="/js/module.js"></script>
+	<script src="/js/factories/player.js"></script>
 	<script src="/js/controllers/player.js"></script>
 	<script src="/js/controllers/album.js"></script>
 </head>
@@ -42,12 +43,13 @@
 					<tbody>
 						<tr ng-repeat="song in album.songs" ng-class="{active: currentSong === song}">
 							<td>
-								<button ng-hide="currentSong === song" ng-click="start(song)" class="btn btn-default btn-xs">
+								{{album.songs}}
+								<button ng-hide="currentSong === song" ng-click="start(song, album.songs)" class="btn btn-default btn-xs">
 									<span class="glyphicon glyphicon-play"></span>
 								</button>
 							</td>
 							<td>{{ song.name }}</td>
-							<td><span ng-repeat="artist in song.artists">{{ artist.name }} </span></td>
+							<td><span ng-repeat="artist in song.artists">{{ artist.name }}</span></td>
 							<td>{{ song.genres.join(', ') }}</td>
 						</tr>
 					</tbody>
@@ -62,8 +64,8 @@
 						<span class="glyphicon glyphicon-step-backward"></span>
 					</button>
 					<button ng-click="toggle()" class="btn btn-default">
-						<span ng-if="!isPlaying" class="glyphicon glyphicon-play"></span>
-						<span ng-if="isPlaying" class="glyphicon glyphicon-pause"></span>
+						<span ng-if="!isPlaying()" class="glyphicon glyphicon-play"></span>
+						<span ng-if="isPlaying()" class="glyphicon glyphicon-pause"></span>
 					</button>
 					<button ng-click="forward()" class="btn btn-default">
 						<span class="glyphicon glyphicon-step-forward"></span>

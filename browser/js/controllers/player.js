@@ -1,42 +1,24 @@
-app.controller('PlayerCtrl', function ($scope, $rootScope) {
+app.controller('PlayerCtrl', function ($scope, $rootScope, PlayerFactory) {
 
 	var audio = document.createElement('audio');
-	$scope.isPlaying = undefined;
+	$scope.isPlaying = PlayerFactory.isPlaying2;
 	
 	var songs;
+	
 	$scope.$on('startIt', function (evt, data) {
 		$scope.start(data.song);
 		songs = data.album.songs;
 	});
 
-	$scope.load = function (song) {
-		audio.src = song.audioUrl;
-		audio.load();
-		$scope.currentSong = song;
-		$rootScope.$broadcast('songLoad', song);
-		$scope.progress = 0;
-	}
+	$scope.load = PlayerFactory.load;
 
-	$scope.pause = function () {
-		audio.pause();
-		$scope.isPlaying = false;
-	};
+	$scope.pause = PlayerFactory.pause;
 
-	$scope.play = function () {
-		audio.play();
-		$scope.isPlaying = true;
-	};
+	$scope.play = PlayerFactory.play;
 
-	$scope.start = function (song) {
-		$scope.pause();
-		$scope.load(song);
-		$scope.play();
-	};
+	$scope.start = PlayerFactory.start;
 
-	$scope.toggle = function () {
-		if ($scope.isPlaying) $scope.pause();
-		else $scope.play();
-	};
+	$scope.toggle = PlayerFactory.toggle;
 
 	$scope.moveTo = function (index) {
 		index += songs.length

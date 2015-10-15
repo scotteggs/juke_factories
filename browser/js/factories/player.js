@@ -1,40 +1,81 @@
-app.factory('PlayerFactory', function () {
-	
+app.factory('StatsFactory', function ($q) {
+    var statsObj = {};
+    statsObj.totalTime = function (album) {
+        var audio = document.createElement('audio');
+        return $q(function (resolve, reject) {
+            var sum = 0;
+            var n = 0;
+            function resolveOrRecur () {
+                if (n >= album.songs.length) resolve(sum);
+                else audio.src = album.songs[n++].audioUrl;
+            }
+            audio.addEventListener('loadedmetadata', function () {
+                sum += audio.duration;
+                resolveOrRecur();
+            });
+            resolveOrRecur();
+        });
+    };
+    return statsObj;
+});
+
+app.factory('PlayerFactory', function ($rootScope) {
  	
  	var playCtrl = {
- 		isPlaying2: false,
+ 		isPlaying: false,
  		currentSong: null,
  		progress: 0
  	};
 
- 	playCtrl.isPlaying = function(){
- 		return playCtrl.isPlaying2;
- 	};
+ 	playCtrl.isPlaying2 = function(){
+ 		return playCtrl.isPlaying;
+ 	}
 
  	playCtrl.pause = function (){
- 		if(!playCtrl.currentSong2) playCtrl.currentSong2 = document.createElement('audio');
- 		playCtrl.currentSong2.pause()
- 		playCtrl.isPlaying2 = false;
+ 		console.log("pausing")
+ 		if(!playCtrl.currentSong2) {
+ 			playCtrl.currentSong2 = document.createElement('audio');
+ 		}
+ 		playCtrl.currentSong2.pause();
+ 		playCtrl.isPlaying = false;
  	}
- 	playCtrl.start = function (song, songs){
-		if(playCtrl.isPlaying2) {
-			playCtrl.pause();
-			playCtrl.isPlaying2 = false;
-		}
-		if(songs) playCtrl.songs = songs;
+
+ 	playCtrl.load = function(song){
+ 	// 		audio.src = song.audioUrl;
+		// audio.load();
+		// $scope.currentSong = song;
+		// $rootScope.$broadcast('songLoad', song);
+		// $scope.progress = 0;
 		var audio = document.createElement('audio');
 		audio.src = song.audioUrl;
 		audio.load();
-		audio.play();
 		playCtrl.currentSong2 = audio;
 		playCtrl.currentSong = song;
-		playCtrl.isPlaying2 = true;
+		$rootScope.currentSong = song;
+	}
 
+	playCtrl.play = function(){
+ 		playCtrl.currentSong2.play();
+ 		playCtrl.isPlaying = true;
  	}
+
+ 	playCtrl.toggle = function(){
+ 		if(playCtrl.isPlaying) playCtrl.pause();
+ 		else playCtrl.play();
+ 	}
+
+ 	playCtrl.start = function (song, songs){
+		if(songs) playCtrl.songs = songs;
+		console.log("Songs", songs)
+		playCtrl.pause();
+		playCtrl.load(song);
+		playCtrl.play();
+ 	}
+
  	playCtrl.resume = function() {
  		if(!playCtrl.currentSong2) playCtrl.currentSong2 = document.createElement('audio');
  		playCtrl.currentSong2.play();
- 		playCtrl.isPlaying2 = true;
+ 		playCtrl.isPlaying = true;
  	}
 
  	playCtrl.getCurrentSong = function() {
@@ -63,7 +104,7 @@ app.factory('PlayerFactory', function () {
  	}
 
  	playCtrl.getProgress = function() {
- 		if (!playCtrl.isPlaying()) return 0;
+ 		if (!playCtrl.isPlaying) return 0;
  		var thisAud = playCtrl.currentSong2;
  		playCtrl.progress = thisAud.currentTime / thisAud.duration
  		return playCtrl.progress;

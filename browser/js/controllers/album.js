@@ -20,30 +20,11 @@
 // 	imageUrl: 'http://fillmurray.com/300/300'
 // };
 
-app.factory('StatsFactory', function ($q) {
-    var statsObj = {};
-    statsObj.totalTime = function (album) {
-        var audio = document.createElement('audio');
-        return $q(function (resolve, reject) {
-            var sum = 0;
-            var n = 0;
-            function resolveOrRecur () {
-                if (n >= album.songs.length) resolve(sum);
-                else audio.src = album.songs[n++].audioUrl;
-            }
-            audio.addEventListener('loadedmetadata', function () {
-                sum += audio.duration;
-                resolveOrRecur();
-            });
-            resolveOrRecur();
-        });
-    };
-    return statsObj;
-});
 
 
-app.controller('AlbumCtrl', function ($scope, $http, $rootScope, StatsFactory) {
-	// $scope.album = fakeAlbum;
+
+app.controller('AlbumCtrl', function ($scope, $http, $rootScope, StatsFactory, PlayerFactory) {
+	$scope.isPlaying = PlayerFactory.isPlaying;
 	$http.get('/api/albums/561eb127aa4d88af14119c23')
 	.then(function (response) {
 		var album = response.data;
@@ -57,20 +38,22 @@ app.controller('AlbumCtrl', function ($scope, $http, $rootScope, StatsFactory) {
 		});
 		$scope.album = album;
 
-		StatsFactory.totalTime(album)
-    .then(function (albumDuration) {
-        $scope.fullDuration = albumDuration;
-        console.log(albumDuration);
-    });
+		// StatsFactory.totalTime(album)
+  //   .then(function (albumDuration) {
+  //       $scope.fullDuration = albumDuration;
+  //       console.log(albumDuration);
+  //   });
 
 	});
+
 	$scope.start = function (s) {
-		$rootScope.$broadcast('startIt', {
-			song: s,
-			album: $scope.album
-		});
+	// 	$rootScope.$broadcast('startIt', {
+	// 		song: s,
+	// 		album: $scope.album
+	// 	});
+			PlayerFactory.start(s);
 	};
-	$scope.$on('songLoad', function (evt, song) {
-		$scope.currentSong = song;
-	});
+	// $scope.$on('songLoad', function (evt, song) {
+	// 	$scope.currentSong = song;
+	// });
 });
